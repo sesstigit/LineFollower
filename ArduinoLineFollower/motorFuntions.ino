@@ -1,23 +1,21 @@
 
 void motorStop()
 {
-  leftServo.writeMicroseconds(1500);
-  rightServo.writeMicroseconds(1500);
+  esc.writeMicroseconds(IDLE_SPEED);
+  steer.writeMicroseconds(STRAIGHT_WHEELS);
   delay(200);
 }
 
 //--------------------------------------------- 
 void motorForward()
 {
-  leftServo.writeMicroseconds(1500 - power);
-  rightServo.writeMicroseconds(1500 + power*adj);
+  esc.writeMicroseconds(IDLE_SPEED + OVERRIDE_FORWARD_SPEED);
 }
 
 //---------------------------------------------
 void motorBackward()
 {
-  leftServo.writeMicroseconds(1500 + power);
-  rightServo.writeMicroseconds(1500 - power);
+  esc.writeMicroseconds(IDLE_SPEED + OVERRIDE_BACKWARD_SPEED);
 }
 
 //---------------------------------------------
@@ -39,8 +37,10 @@ void motorBwTime (unsigned int time)
 //------------------------------------------------
 void motorTurn(int direction, int degrees)
 {
-  leftServo.writeMicroseconds(1500 - iniMotorPower*direction);
-  rightServo.writeMicroseconds(1500 - iniMotorPower*direction);
+  final_degrees = STRAIGHT_WHEELS + (direction * degrees);
+  constrain(final_degrees, MAX_RIGHT_DEGREES, MAX_LEFT_DEGREES);
+  steer.writeMicroseconds(final_degrees);
+  
   delay (round(adjTurn*degrees+1));
   motorStop();
 }
@@ -48,16 +48,19 @@ void motorTurn(int direction, int degrees)
 //---------------------------------------------------
 void motorPIDcontrol()
 {
-  
-  int leftMotorSpeed = 1500 - iniMotorPower - PIDvalue;
-  int rightMotorSpeed = 1500 + iniMotorPower*adj - PIDvalue;
+  final_degrees = STRAIGHT_WHEELS + PIDvalue
+  //int leftMotorSpeed = 1500 - iniMotorPower - PIDvalue;
+  //int rightMotorSpeed = 1500 + iniMotorPower*adj - PIDvalue;
   
   // The motor speed should not exceed the max PWM value
-   constrain(leftMotorSpeed, 1000, 2000);
-   constrain(rightMotorSpeed, 1000, 2000);
+  // constrain(leftMotorSpeed, 1000, 2000);
+  // constrain(rightMotorSpeed, 1000, 2000);
   
-  leftServo.writeMicroseconds(leftMotorSpeed);
-  rightServo.writeMicroseconds(rightMotorSpeed);
+  constrain(final_degrees, MAX_RIGHT_DEGREES, MAX_LEFT_DEGREES);
+  steer.writeMicroseconds(final_degrees);
+  
+  //leftServo.writeMicroseconds(leftMotorSpeed);
+  //rightServo.writeMicroseconds(rightMotorSpeed);
   
   //Serial.print (PIDvalue);
   //Serial.print (" ==> Left, Right:  ");
